@@ -1,0 +1,59 @@
+﻿@page "/"
+@page "/page/{page}"
+@page "/page/{page}/{searchTerm}"
+@inject IUriHelper uriHelper
+@inject IAccountsClient accountsClient
+
+<div class="row">
+    <div class="col-md-9">
+        <h2>Accounts Database</h2>
+    </div>
+</div>
+
+<div class="row margin-bottom-20">
+    <div class="col-md-9">
+        <input type="text" bind="searchTerm" onkeyup="@searchClick" />
+        <button class="btn" type="button" onclick="@searchClick">Search</button>
+    </div>
+</div>
+
+@if (accounts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+        @foreach (var account in accounts.Results)
+        {
+            var id = account.Id;
+            var title = account.Name;
+            <tr>
+                <td>@account.Id</td>
+                <td>@account.Name</td>
+            </tr>
+        }
+    </table>
+
+
+}
+
+@functions {
+    string page = "1";
+    string searchTerm = "";
+    PagedResult<Account> accounts;
+
+    async Task searchClick()
+    {
+        accounts = await accountsClient.SearchAccounts(searchTerm, int.Parse(page));
+    }
+
+    void pagerPageChanged(int page)
+    {
+        uriHelper.NavigateTo("/page/" + page + "/" + searchTerm);
+    }
+}
